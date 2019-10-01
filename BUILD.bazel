@@ -1,0 +1,44 @@
+load("//buckaroo:defs.bzl", "buckaroo_deps")
+
+cc_library(
+  name = "context",
+  includes = [
+    "include",
+    "src",
+  ],
+  hdrs = glob([
+    "include/**/*.hpp",
+    "include/**/*.ipp",
+    "include/**/*.inl",
+  ]),
+  srcs = select({
+    "@bazel_tools//src/conditions:linux_x86_64": glob([
+      "src/posix/**/*.cpp",
+      "src/**/*.hpp",
+      "src/**/*.ipp",
+      "src/asm/jump_x86_64_sysv_elf_gas.S",
+      "src/asm/make_x86_64_sysv_elf_gas.S",
+      "src/asm/ontop_x86_64_sysv_elf_gas.S",
+    ]),
+    "@bazel_tools//src/conditions:darwin": glob([
+      "src/posix/**/*.cpp",
+      "src/**/*.hpp",
+      "src/**/*.ipp",
+      "src/asm/jump_x86_64_sysv_macho_gas.S",
+      "src/asm/make_x86_64_sysv_macho_gas.S",
+      "src/asm/ontop_x86_64_sysv_macho_gas.S",
+    ]),
+    "@bazel_tools//src/conditions:windows": glob([
+      "src/windows/**/*.cpp",
+    ]),
+  }),
+  defines = select({
+    "@bazel_tools//src/conditions:linux_x86_64": [
+      "BOOST_USE_UCONTEXT=1",
+    ],
+  }),
+  deps = buckaroo_deps(),
+  visibility = [
+    "//visibility:public",
+  ],
+)
